@@ -30,8 +30,8 @@ data class StatusResponseDto(
 
 @JsonClass(generateAdapter = true)
 data class AccountDto(
-    val firstname: String?,
-    val lastname: String?,
+    @Json(name = "firstname") val firstName: String?,
+    @Json(name = "lastname") val lastName: String?,
     val email: String?
 )
 

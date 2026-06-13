@@ -144,7 +144,7 @@ private fun ConnectionStatusCard(state: UiState<StatusResponseDto>) {
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(Modifier.height(8.dp))
-                    StatusRow("Account", "${status.account.firstname} ${status.account.lastname}")
+                    StatusRow("Account", "${status.account.firstName.orEmpty()} ${status.account.lastName.orEmpty()}".trim().ifEmpty { "–" })
                     StatusRow("Plan", status.subscription.plan ?: "–")
                     StatusRow(
                         "Requests today",
