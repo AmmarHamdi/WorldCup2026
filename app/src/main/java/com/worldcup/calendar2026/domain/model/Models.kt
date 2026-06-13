@@ -52,7 +52,7 @@ data class StandingRow(
 
 // ---- Match Detail -----------------------------------------------------------
 
-enum class EventType { GOAL, CARD, SUBSTITUTION, VAR }
+enum class EventType { GOAL, CARD, SUBSTITUTION, VAR, UNKNOWN }
 
 data class MatchEvent(
     val minute: Int,

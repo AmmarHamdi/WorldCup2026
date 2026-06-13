@@ -87,7 +87,7 @@ private fun String?.toEventType(): EventType = when (this?.lowercase()) {
     "card" -> EventType.CARD
     "subst" -> EventType.SUBSTITUTION
     "var" -> EventType.VAR
-    else -> EventType.VAR
+    else -> EventType.UNKNOWN
 }
 
 fun MatchEventDto.toMatchEvent(): MatchEvent = MatchEvent(

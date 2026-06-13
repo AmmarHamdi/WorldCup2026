@@ -290,6 +290,7 @@ private fun EventRow(event: MatchEvent, isHomeTeam: Boolean) {
         EventType.CARD -> Icons.Filled.Rectangle
         EventType.SUBSTITUTION -> Icons.Filled.CompareArrows
         EventType.VAR -> Icons.Filled.Visibility
+        EventType.UNKNOWN -> Icons.Filled.Visibility
     }
 
     val iconTint = when (event.type) {
@@ -298,6 +299,7 @@ private fun EventRow(event: MatchEvent, isHomeTeam: Boolean) {
             Color(0xFFFFD600) else MaterialTheme.colorScheme.error
         EventType.SUBSTITUTION -> MaterialTheme.colorScheme.tertiary
         EventType.VAR -> MaterialTheme.colorScheme.secondary
+        EventType.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Row(

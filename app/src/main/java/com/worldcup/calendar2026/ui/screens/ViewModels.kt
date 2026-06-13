@@ -14,7 +14,6 @@ import com.worldcup.calendar2026.notifications.MatchNotificationManager
 import com.worldcup.calendar2026.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -161,7 +160,6 @@ class MatchDetailViewModel @Inject constructor(
                 val eventsDeferred = async { repo.matchEvents(matchId) }
                 val lineupsDeferred = async { repo.matchLineups(matchId) }
                 val statsDeferred = async { repo.matchStatistics(matchId) }
-                awaitAll(matchDeferred, eventsDeferred, lineupsDeferred, statsDeferred)
                 val match = matchDeferred.await()
                 val events = eventsDeferred.await()
                 val lineups = lineupsDeferred.await()
