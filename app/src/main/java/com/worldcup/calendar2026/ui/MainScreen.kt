@@ -18,12 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.worldcup.calendar2026.R
 import com.worldcup.calendar2026.ui.screens.CalendarScreen
 import com.worldcup.calendar2026.ui.screens.LiveScreen
 import com.worldcup.calendar2026.ui.screens.NextDayScreen
@@ -49,7 +51,7 @@ fun MainScreen() {
     } ?: Tab.Calendar
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("World Cup 2026 · ${currentTab.label}") }) },
+        topBar = { TopAppBar(title = { Text("${stringResource(R.string.app_name)} · ${currentTab.label}") }) },
         bottomBar = {
             NavigationBar {
                 Tab.entries.forEach { tab ->

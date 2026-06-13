@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -27,9 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.worldcup.calendar2026.BuildConfig
 import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.ui.UiState
 
@@ -39,6 +48,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
     var draftKey by rememberSaveable { mutableStateOf(savedKey) }
     var saved by rememberSaveable { mutableStateOf(false) }
+    var revealKey by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -56,10 +66,22 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 saved = false
             },
             label = { Text("API Key") },
-            placeholder = { Text("Enter your API-Football key") },
+            placeholder = { Text(BuildConfig.API_KEY_HINT) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password
+            ),
+            visualTransformation = if (revealKey) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { revealKey = !revealKey }) {
+                    Icon(
+                        imageVector = if (revealKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (revealKey) "Hide key" else "Show key"
+                    )
+                }
+            }
         )
         Spacer(Modifier.height(16.dp))
         Row(
@@ -94,6 +116,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         connectionState?.let { state ->
             ConnectionStatusCard(state)
         }
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

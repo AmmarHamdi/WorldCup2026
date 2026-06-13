@@ -7,6 +7,7 @@ import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.data.repository.WorldCupRepository
 import com.worldcup.calendar2026.domain.model.GroupStanding
 import com.worldcup.calendar2026.domain.model.Match
+import com.worldcup.calendar2026.notifications.MatchNotificationManager
 import com.worldcup.calendar2026.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,8 @@ class CalendarViewModel @Inject constructor(
 /** Live matches — fetched on demand (no automatic polling). */
 @HiltViewModel
 class LiveViewModel @Inject constructor(
-    private val repo: WorldCupRepository
+    private val repo: WorldCupRepository,
+    private val notifications: MatchNotificationManager
 ) : ViewModel() {
     private val _state = MutableStateFlow<UiState<List<Match>>>(UiState.Loading)
     val state = _state.asStateFlow()
@@ -47,7 +49,10 @@ class LiveViewModel @Inject constructor(
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
         runCatching { repo.liveMatches() }
-            .onSuccess { _state.value = UiState.Success(it) }
+            .onSuccess {
+                _state.value = UiState.Success(it)
+                notifications.notifyLiveMatches(it)
+            }
             .onFailure { _state.value = UiState.Error(it.message ?: "Could not load live matches") }
     }
 }
@@ -55,7 +60,8 @@ class LiveViewModel @Inject constructor(
 /** Tomorrow's fixtures. */
 @HiltViewModel
 class NextDayViewModel @Inject constructor(
-    private val repo: WorldCupRepository
+    private val repo: WorldCupRepository,
+    private val notifications: MatchNotificationManager
 ) : ViewModel() {
     val date: LocalDate = LocalDate.now().plusDays(1)
 
@@ -67,7 +73,10 @@ class NextDayViewModel @Inject constructor(
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
         runCatching { repo.fixturesOn(date) }
-            .onSuccess { _state.value = UiState.Success(it) }
+            .onSuccess {
+                _state.value = UiState.Success(it)
+                notifications.notifyUpcomingMatches(it)
+            }
             .onFailure { _state.value = UiState.Error(it.message ?: "Could not load fixtures") }
     }
 }
