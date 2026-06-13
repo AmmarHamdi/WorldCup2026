@@ -168,6 +168,24 @@ class StandingsViewModel @Inject constructor(
     }
 }
 
+/** Knockout bracket — matches grouped by round. */
+@HiltViewModel
+class KnockoutViewModel @Inject constructor(
+    private val repo: WorldCupRepository
+) : ViewModel() {
+    private val _state = MutableStateFlow<UiState<Map<String, List<Match>>>>(UiState.Loading)
+    val state = _state.asStateFlow()
+
+    init { refresh() }
+
+    fun refresh() = viewModelScope.launch {
+        _state.value = UiState.Loading
+        runCatching { repo.knockoutFixtures() }
+            .onSuccess { _state.value = UiState.Success(it) }
+            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load knockout fixtures") }
+    }
+}
+
 /** Settings — manages the API key used for all network requests. */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(

@@ -2,6 +2,7 @@ package com.worldcup.calendar2026.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.PlayCircle
@@ -19,6 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -29,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.worldcup.calendar2026.R
 import com.worldcup.calendar2026.ui.screens.CalendarScreen
+import com.worldcup.calendar2026.ui.screens.KnockoutScreen
 import com.worldcup.calendar2026.ui.screens.LiveScreen
 import com.worldcup.calendar2026.ui.screens.MatchDetailScreen
 import com.worldcup.calendar2026.ui.screens.NextDayScreen
@@ -39,6 +43,7 @@ enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     Calendar("calendar", "Calendar", Icons.Filled.CalendarMonth),
     Live("live", "Live", Icons.Filled.PlayCircle),
     Standings("standings", "Table", Icons.Filled.EmojiEvents),
+    Knockout("knockout", "Bracket", Icons.Filled.AccountTree),
     NextDay("nextday", "Tomorrow", Icons.Filled.Today),
     Settings("settings", "Settings", Icons.Filled.Settings)
 }
@@ -78,7 +83,7 @@ fun MainScreen() {
                                 }
                             },
                             icon = { Icon(tab.icon, contentDescription = tab.label) },
-                            label = { Text(tab.label) }
+                            label = { Text(tab.label, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) }
                         )
                     }
                 }
@@ -97,6 +102,9 @@ fun MainScreen() {
                 LiveScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
             }
             composable(Tab.Standings.route) { StandingsScreen() }
+            composable(Tab.Knockout.route) {
+                KnockoutScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
+            }
             composable(Tab.NextDay.route) {
                 NextDayScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
             }
