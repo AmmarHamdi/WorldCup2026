@@ -3,6 +3,7 @@ package com.worldcup.calendar2026.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.worldcup.calendar2026.data.ApiKeyStore
+import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.data.repository.WorldCupRepository
 import com.worldcup.calendar2026.domain.model.GroupStanding
 import com.worldcup.calendar2026.domain.model.Match
@@ -92,13 +93,25 @@ class StandingsViewModel @Inject constructor(
 /** Settings — manages the API key used for all network requests. */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val apiKeyStore: ApiKeyStore
+    private val apiKeyStore: ApiKeyStore,
+    private val repo: WorldCupRepository
 ) : ViewModel() {
     private val _apiKey = MutableStateFlow(apiKeyStore.getKey())
     val apiKey: StateFlow<String> = _apiKey.asStateFlow()
 
+    private val _connectionState = MutableStateFlow<UiState<StatusResponseDto>?>(null)
+    val connectionState: StateFlow<UiState<StatusResponseDto>?> = _connectionState.asStateFlow()
+
     fun saveApiKey(key: String) {
         apiKeyStore.setKey(key)
         _apiKey.value = apiKeyStore.getKey()
+        _connectionState.value = null
+    }
+
+    fun testConnection() = viewModelScope.launch {
+        _connectionState.value = UiState.Loading
+        runCatching { repo.checkStatus() }
+            .onSuccess { _connectionState.value = UiState.Success(it) }
+            .onFailure { _connectionState.value = UiState.Error(it.message ?: "Connection failed") }
     }
 }

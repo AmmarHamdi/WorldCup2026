@@ -3,10 +3,15 @@ package com.worldcup.calendar2026.data.remote
 import com.worldcup.calendar2026.data.remote.dto.ApiEnvelope
 import com.worldcup.calendar2026.data.remote.dto.FixtureResponseDto
 import com.worldcup.calendar2026.data.remote.dto.StandingsResponseDto
+import com.worldcup.calendar2026.data.remote.dto.StatusEnvelope
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiFootballService {
+
+    /** Account status — used to verify API key validity and quota. */
+    @GET("status")
+    suspend fun getStatus(): StatusEnvelope
 
     /** Every fixture in the competition for the given season. */
     @GET("fixtures")

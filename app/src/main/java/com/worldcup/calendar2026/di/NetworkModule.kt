@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import com.worldcup.calendar2026.BuildConfig
 import com.worldcup.calendar2026.data.ApiKeyStore
 import com.worldcup.calendar2026.data.remote.ApiFootballService
+import com.worldcup.calendar2026.data.remote.FlexibleErrorsAdapter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +36,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi = Moshi.Builder().build()
+    fun provideMoshi(): Moshi = Moshi.Builder()
+        .add(FlexibleErrorsAdapter.FACTORY)
+        .build()
 
     @Provides
     @Singleton
