@@ -1,6 +1,6 @@
 # Future Features – World Cup 2026 Calendar App
 
-A prioritised backlog of proposed features, each with a ready-to-use **Copilot prompt** you can paste into GitHub Copilot to implement it.
+A prioritized backlog of proposed features, each with a ready-to-use **Copilot prompt** you can paste into GitHub Copilot to implement it.
 
 ---
 
@@ -159,7 +159,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 >
 > **UI — MatchCard changes (in `Components.kt`):**
 > - Add an optional `isFavorite: Boolean` parameter to `MatchCard`.
-> - When true, show a small ⭐ icon next to the favourite team's name and apply a subtle primary-colour left border to the card.
+> - When true, show a small ⭐ icon next to the favorite team's name and apply a subtle primary-colour left border to the card.
 >
 > **UI — Team Selection screen:**
 > - Create a `FavoriteTeamsScreen` composable accessible from Settings.
@@ -207,7 +207,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 
 ### 7. Goal & Event Push Alerts (Background)
 
-**What:** A `WorkManager` periodic task polls for live match updates every 2 minutes in the background. When a goal, red card, or full-time result occurs for a favourite team, the user receives a push notification — even when the app is closed.
+**What:** A `WorkManager` periodic task polls for live match updates every 2 minutes in the background. When a goal, red card, or full-time result occurs for a favorite team, the user receives a push notification — even when the app is closed.
 
 **Why:** This transforms the app from a "check when I remember" tool to a real-time companion that keeps users informed throughout every match day.
 
@@ -219,7 +219,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 > - Create `LiveMatchWorker extends CoroutineWorker` in a new `workers/` package.
 > - In `doWork()`, call `WorldCupRepository.liveMatches()` and compare results against the last-known state stored in SharedPreferences.
 > - Detect new goals (homeGoals or awayGoals changed), red cards, and match completions.
-> - For each detected event involving a favourite team (read from `FavoriteTeamsStore`), fire a notification via `MatchNotificationManager`.
+> - For each detected event involving a favorite team (read from `FavoriteTeamsStore`), fire a notification via `MatchNotificationManager`.
 > - Use a unique notification ID per match (`match.id + event hash`) to avoid duplicates.
 > - Return `Result.success()`.
 >
@@ -327,7 +327,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 
 ### 11. Multi-Language Support (i18n)
 
-**What:** Localise all user-facing strings into Arabic, Spanish, French, and Portuguese using Android string resources. The app follows the device locale automatically.
+**What:** Localize all user-facing strings into Arabic, Spanish, French, and Portuguese using Android string resources. The app follows the device locale automatically.
 
 **Why:** The World Cup is a global event hosted across three countries. Multi-language support significantly expands the audience.
 
@@ -459,7 +459,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 
 ### 16. Home Screen Widget (Jetpack Glance)
 
-**What:** A home-screen widget showing the next upcoming match (or current live score) for the user's favourite team. Tapping opens the app to the match detail.
+**What:** A home-screen widget showing the next upcoming match (or current live score) for the user's favorite team. Tapping opens the app to the match detail.
 
 **Copilot prompt:**
 
@@ -472,9 +472,9 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 > - Create `NextMatchWidget extends GlanceAppWidget` in a new `widget/` package.
 > - Create `NextMatchWidgetReceiver extends GlanceAppWidgetReceiver`.
 > - The widget should display:
->   - If a live match exists for a favourite team: both team logos, the score, and elapsed time with a red "LIVE" badge.
->   - Otherwise: the next scheduled match for a favourite team with logos, team names, and kickoff time.
->   - If no favourites are set, show the next match globally.
+>   - If a live match exists for a favorite team: both team logos, the score, and elapsed time with a red "LIVE" badge.
+>   - Otherwise: the next scheduled match for a favorite team with logos, team names, and kickoff time.
+>   - If no favorites are set, show the next match globally.
 > - Use `GlanceModifier`, `Column`, `Row`, `Image` (for logos), and `Text` composables from Glance.
 > - Use a `WorkManager` periodic task (every 15 min) to update the widget data via `NextMatchWidget.update(context, glanceId)`.
 >
@@ -491,7 +491,7 @@ A prioritised backlog of proposed features, each with a ready-to-use **Copilot p
 
 ### 17. Analytics & Crash Reporting
 
-**What:** Integrate Firebase Crashlytics for crash reporting and Firebase Analytics to track screen views and key user actions (favourite a team, set a reminder, share a match).
+**What:** Integrate Firebase Crashlytics for crash reporting and Firebase Analytics to track screen views and key user actions (favorite a team, set a reminder, share a match).
 
 **Copilot prompt:**
 
