@@ -95,15 +95,11 @@ class WorldCupRepository @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     fun liveMatchesFlow(): Flow<CachedResult<List<Match>>> = flow {
-        // Live matches are inherently real-time, so no cache-first emit.
-        try {
-            val envelope = service.getLiveFixtures(league, season)
-            if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
-            val fresh = envelope.response.map { it.toMatch() }.sortedBy { it.kickoff }
-            emit(CachedResult(fresh))
-        } catch (e: Exception) {
-            throw e
-        }
+        // Live matches are inherently real-time; caching stale scores would be misleading.
+        val envelope = service.getLiveFixtures(league, season)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        val fresh = envelope.response.map { it.toMatch() }.sortedBy { it.kickoff }
+        emit(CachedResult(fresh))
     }.flowOn(Dispatchers.IO)
 
     fun standingsFlow(): Flow<CachedResult<List<GroupStanding>>> = flow {
