@@ -34,18 +34,20 @@ class MatchNotificationManager @Inject constructor(
     fun notifyLiveMatches(liveMatches: List<Match>) {
         if (!canNotify() || liveMatches.isEmpty()) return
         createChannelIfNeeded()
-        val fingerprint = liveMatches.joinToString("-") { "${it.id}:${it.homeGoals}:${it.awayGoals}:${it.elapsed}" }
+        val fingerprint = liveMatches.joinToString("-") {
+            "${it.id}:${it.homeGoals?.toString() ?: "null"}:${it.awayGoals?.toString() ?: "null"}:${it.elapsed?.toString() ?: "null"}"
+        }
         if (prefs.getString(KEY_LAST_LIVE, null) == fingerprint) return
 
         val first = liveMatches.first()
-        val minute = first.elapsed?.let { "$it'" } ?: "LIVE"
+        val matchStatus = first.elapsed?.let { "$it'" } ?: "LIVE"
         val score = "${first.home.name} ${first.homeGoals ?: 0} - ${first.awayGoals ?: 0} ${first.away.name}"
         val content = if (liveMatches.size > 1) {
-            "$score • $minute (+${liveMatches.size - 1} more live match)"
-        } else "$score • $minute"
+            "$score • $matchStatus (+${liveMatches.size - 1} more live matches)"
+        } else "$score • $matchStatus"
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_worldcup_icon)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Live World Cup match")
             .setContentText(content)
             .setStyle(NotificationCompat.BigTextStyle().bigText(content))
@@ -69,8 +71,8 @@ class MatchNotificationManager @Inject constructor(
 
         val content = "${next.home.name} vs ${next.away.name} at ${next.kickoff.format(timeFormatter)}"
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_worldcup_icon)
-            .setContentTitle("Incoming World Cup match")
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("Upcoming World Cup match")
             .setContentText(content)
             .setStyle(NotificationCompat.BigTextStyle().bigText(content))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -100,7 +102,7 @@ class MatchNotificationManager @Inject constructor(
                     "Match updates",
                     NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
-                    description = "Live and upcoming world cup match alerts"
+                    description = "Live and upcoming World Cup match alerts"
                 }
             )
         }

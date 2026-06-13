@@ -71,14 +71,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Password
+                keyboardType = KeyboardType.Text
             ),
             visualTransformation = if (revealKey) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { revealKey = !revealKey }) {
                     Icon(
-                        imageVector = if (revealKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = if (revealKey) "Hide key" else "Show key"
+                        imageVector = if (revealKey) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = if (revealKey) "Showing key" else "Hidden key"
                     )
                 }
             }

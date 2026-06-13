@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
@@ -22,6 +23,9 @@ import com.worldcup.calendar2026.ui.theme.WorldCupTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
+private const val SPLASH_STEPS = 20
+private const val SPLASH_STEP_DELAY_MS = 120L
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +35,15 @@ class MainActivity : ComponentActivity() {
             WorldCupTheme {
                 val notificationPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
-                ) {}
+                ) { granted ->
+                    if (!granted) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Enable notifications to receive live and upcoming match alerts.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
                 LaunchedEffect(Unit) {
                     if (
                         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -47,9 +59,9 @@ class MainActivity : ComponentActivity() {
                 var showSplash by remember { mutableStateOf(true) }
                 var progress by remember { mutableFloatStateOf(0f) }
                 LaunchedEffect(Unit) {
-                    repeat(20) {
-                        delay(120)
-                        progress = (it + 1) / 20f
+                    repeat(SPLASH_STEPS) {
+                        delay(SPLASH_STEP_DELAY_MS)
+                        progress = (it + 1) / SPLASH_STEPS.toFloat()
                     }
                     showSplash = false
                 }

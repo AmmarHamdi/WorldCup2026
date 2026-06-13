@@ -24,12 +24,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.worldcup.calendar2026.R
 
+private val SplashOverlay = Color(0xFF031740)
+
 @Composable
 fun SplashScreen(progress: Float) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF031740))
+            .background(SplashOverlay)
     ) {
         AsyncImage(
             model = stringResource(R.string.splash_image_url),
@@ -41,7 +43,7 @@ fun SplashScreen(progress: Float) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0x88031740))
+                .background(SplashOverlay.copy(alpha = 0.53f))
         )
         Column(
             modifier = Modifier

@@ -15,8 +15,8 @@ val localProps = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 val footballApiKey: String = localProps.getProperty("FOOTBALL_API_KEY") ?: ""
-val appVersionCode: Int = (findProperty("APP_VERSION_CODE") as String?)?.toIntOrNull() ?: 1
-val appVersionName: String = (findProperty("APP_VERSION_NAME") as String?) ?: "1.0.0"
+val appVersionCode: Int = (findProperty("APP_VERSION_CODE") as String?)?.toIntOrNull() ?: 2
+val appVersionName: String = (findProperty("APP_VERSION_NAME") as String?) ?: "1.1.0"
 
 android {
     namespace = "com.worldcup.calendar2026"
@@ -30,7 +30,7 @@ android {
         versionName = appVersionName
 
         buildConfigField("String", "FOOTBALL_API_KEY", "\"$footballApiKey\"")
-        buildConfigField("String", "API_KEY_HINT", "\"bb46***************f2d0\"")
+        buildConfigField("String", "API_KEY_HINT", "\"your_api_key_here\"")
     }
 
     buildTypes {
