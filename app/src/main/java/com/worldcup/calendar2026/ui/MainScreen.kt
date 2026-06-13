@@ -21,13 +21,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.worldcup.calendar2026.R
 import com.worldcup.calendar2026.ui.screens.CalendarScreen
 import com.worldcup.calendar2026.ui.screens.LiveScreen
+import com.worldcup.calendar2026.ui.screens.MatchDetailScreen
 import com.worldcup.calendar2026.ui.screens.NextDayScreen
 import com.worldcup.calendar2026.ui.screens.SettingsScreen
 import com.worldcup.calendar2026.ui.screens.StandingsScreen
@@ -50,24 +53,34 @@ fun MainScreen() {
         currentDestination?.hierarchy?.any { it.route == tab.route } == true
     } ?: Tab.Calendar
 
+    val showBottomBar = Tab.entries.any { tab ->
+        currentDestination?.hierarchy?.any { it.route == tab.route } == true
+    }
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text("${stringResource(R.string.app_name)} · ${currentTab.label}") }) },
+        topBar = {
+            if (showBottomBar) {
+                TopAppBar(title = { Text("${stringResource(R.string.app_name)} · ${currentTab.label}") })
+            }
+        },
         bottomBar = {
-            NavigationBar {
-                Tab.entries.forEach { tab ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(tab.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(tab.icon, contentDescription = tab.label) },
-                        label = { Text(tab.label) }
-                    )
+            if (showBottomBar) {
+                NavigationBar {
+                    Tab.entries.forEach { tab ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(tab.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(tab.icon, contentDescription = tab.label) },
+                            label = { Text(tab.label) }
+                        )
+                    }
                 }
             }
         }
@@ -77,11 +90,23 @@ fun MainScreen() {
             startDestination = Tab.Calendar.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Tab.Calendar.route) { CalendarScreen() }
-            composable(Tab.Live.route) { LiveScreen() }
+            composable(Tab.Calendar.route) {
+                CalendarScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
+            }
+            composable(Tab.Live.route) {
+                LiveScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
+            }
             composable(Tab.Standings.route) { StandingsScreen() }
-            composable(Tab.NextDay.route) { NextDayScreen() }
+            composable(Tab.NextDay.route) {
+                NextDayScreen(onMatchClick = { matchId -> navController.navigate("match/$matchId") })
+            }
             composable(Tab.Settings.route) { SettingsScreen() }
+            composable(
+                route = "match/{matchId}",
+                arguments = listOf(navArgument("matchId") { type = NavType.IntType })
+            ) {
+                MatchDetailScreen(onBack = { navController.popBackStack() })
+            }
         }
     }
 }

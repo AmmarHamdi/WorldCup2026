@@ -2,6 +2,9 @@ package com.worldcup.calendar2026.data.remote
 
 import com.worldcup.calendar2026.data.remote.dto.ApiEnvelope
 import com.worldcup.calendar2026.data.remote.dto.FixtureResponseDto
+import com.worldcup.calendar2026.data.remote.dto.FixtureStatisticsResponseDto
+import com.worldcup.calendar2026.data.remote.dto.LineupResponseDto
+import com.worldcup.calendar2026.data.remote.dto.MatchEventDto
 import com.worldcup.calendar2026.data.remote.dto.StandingsResponseDto
 import com.worldcup.calendar2026.data.remote.dto.StatusEnvelope
 import retrofit2.http.GET
@@ -42,4 +45,28 @@ interface ApiFootballService {
         @Query("league") league: Int,
         @Query("season") season: Int
     ): ApiEnvelope<StandingsResponseDto>
+
+    /** Single fixture by id. */
+    @GET("fixtures")
+    suspend fun getFixtureById(
+        @Query("id") id: Int
+    ): ApiEnvelope<FixtureResponseDto>
+
+    /** Events (goals, cards, subs, VAR) for a fixture. */
+    @GET("fixtures/events")
+    suspend fun getFixtureEvents(
+        @Query("fixture") fixtureId: Int
+    ): ApiEnvelope<MatchEventDto>
+
+    /** Lineups for a fixture. */
+    @GET("fixtures/lineups")
+    suspend fun getFixtureLineups(
+        @Query("fixture") fixtureId: Int
+    ): ApiEnvelope<LineupResponseDto>
+
+    /** Statistics for a fixture. */
+    @GET("fixtures/statistics")
+    suspend fun getFixtureStatistics(
+        @Query("fixture") fixtureId: Int
+    ): ApiEnvelope<FixtureStatisticsResponseDto>
 }

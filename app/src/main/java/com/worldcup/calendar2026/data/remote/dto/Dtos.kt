@@ -147,3 +147,77 @@ data class StatsGoalsDto(
     @Json(name = "for") val goalsFor: Int,
     @Json(name = "against") val goalsAgainst: Int
 )
+
+// ---- Match Events -----------------------------------------------------------
+
+@JsonClass(generateAdapter = true)
+data class MatchEventDto(
+    val time: MatchEventTimeDto?,
+    val team: TeamDto?,
+    val player: MatchEventPlayerDto?,
+    val assist: MatchEventPlayerDto?,
+    val type: String?,
+    val detail: String?
+)
+
+@JsonClass(generateAdapter = true)
+data class MatchEventTimeDto(
+    val elapsed: Int?,
+    val extra: Int?
+)
+
+@JsonClass(generateAdapter = true)
+data class MatchEventPlayerDto(
+    val id: Int?,
+    val name: String?
+)
+
+// ---- Fixture Events Envelope ------------------------------------------------
+
+@JsonClass(generateAdapter = true)
+data class FixtureEventsResponseDto(
+    val response: List<MatchEventDto> = emptyList()
+)
+
+// ---- Lineups ----------------------------------------------------------------
+
+@JsonClass(generateAdapter = true)
+data class LineupResponseDto(
+    val team: TeamDto?,
+    val coach: LineupCoachDto?,
+    @Json(name = "startXI") val startingXI: List<LineupPlayerWrapperDto> = emptyList(),
+    val substitutes: List<LineupPlayerWrapperDto> = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class LineupCoachDto(
+    val id: Int?,
+    val name: String?
+)
+
+@JsonClass(generateAdapter = true)
+data class LineupPlayerWrapperDto(
+    val player: LineupPlayerDto?
+)
+
+@JsonClass(generateAdapter = true)
+data class LineupPlayerDto(
+    val id: Int?,
+    val name: String?,
+    val number: Int?,
+    @Json(name = "pos") val position: String?
+)
+
+// ---- Fixture Statistics -----------------------------------------------------
+
+@JsonClass(generateAdapter = true)
+data class FixtureStatisticsResponseDto(
+    val team: TeamDto?,
+    val statistics: List<StatisticItemDto> = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class StatisticItemDto(
+    val type: String?,
+    val value: Any?
+)

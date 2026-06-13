@@ -1,11 +1,19 @@
 package com.worldcup.calendar2026.data.mapper
 
 import com.worldcup.calendar2026.data.remote.dto.FixtureResponseDto
+import com.worldcup.calendar2026.data.remote.dto.FixtureStatisticsResponseDto
+import com.worldcup.calendar2026.data.remote.dto.LineupResponseDto
+import com.worldcup.calendar2026.data.remote.dto.MatchEventDto
 import com.worldcup.calendar2026.data.remote.dto.StandingEntryDto
 import com.worldcup.calendar2026.data.remote.dto.TeamDto
+import com.worldcup.calendar2026.domain.model.EventType
 import com.worldcup.calendar2026.domain.model.GroupStanding
+import com.worldcup.calendar2026.domain.model.Lineup
+import com.worldcup.calendar2026.domain.model.LineupPlayer
 import com.worldcup.calendar2026.domain.model.Match
+import com.worldcup.calendar2026.domain.model.MatchEvent
 import com.worldcup.calendar2026.domain.model.MatchState
+import com.worldcup.calendar2026.domain.model.MatchStatistic
 import com.worldcup.calendar2026.domain.model.StandingRow
 import com.worldcup.calendar2026.domain.model.Team
 import java.time.ZoneId
@@ -70,4 +78,69 @@ fun List<StandingEntryDto>.toGroupStanding(): GroupStanding {
         )
     }
     return GroupStanding(groupName = groupName, rows = rows)
+}
+
+// ---- Match Events -----------------------------------------------------------
+
+private fun String?.toEventType(): EventType = when (this?.lowercase()) {
+    "goal" -> EventType.GOAL
+    "card" -> EventType.CARD
+    "subst" -> EventType.SUBSTITUTION
+    "var" -> EventType.VAR
+    else -> EventType.VAR
+}
+
+fun MatchEventDto.toMatchEvent(): MatchEvent = MatchEvent(
+    minute = time?.elapsed ?: 0,
+    extraMinute = time?.extra,
+    teamId = team?.id ?: 0,
+    playerName = player?.name ?: "Unknown",
+    assistName = assist?.name,
+    type = type.toEventType(),
+    detail = detail
+)
+
+// ---- Lineups ----------------------------------------------------------------
+
+fun LineupResponseDto.toLineup(): Lineup = Lineup(
+    teamId = team?.id ?: 0,
+    teamName = team?.name ?: "TBD",
+    teamLogo = team?.logo,
+    coach = coach?.name,
+    startingXI = startingXI.mapNotNull { wrapper ->
+        wrapper.player?.let { p ->
+            LineupPlayer(
+                id = p.id ?: 0,
+                name = p.name ?: "Unknown",
+                number = p.number ?: 0,
+                position = p.position
+            )
+        }
+    },
+    substitutes = substitutes.mapNotNull { wrapper ->
+        wrapper.player?.let { p ->
+            LineupPlayer(
+                id = p.id ?: 0,
+                name = p.name ?: "Unknown",
+                number = p.number ?: 0,
+                position = p.position
+            )
+        }
+    }
+)
+
+// ---- Statistics -------------------------------------------------------------
+
+fun List<FixtureStatisticsResponseDto>.toMatchStatistics(): List<MatchStatistic> {
+    if (size < 2) return emptyList()
+    val homeStats = this[0].statistics.associate { it.type to it.value?.toString() }
+    val awayStats = this[1].statistics.associate { it.type to it.value?.toString() }
+    val allTypes = (homeStats.keys + awayStats.keys).distinct()
+    return allTypes.map { type ->
+        MatchStatistic(
+            type = type ?: "Unknown",
+            home = homeStats[type],
+            away = awayStats[type]
+        )
+    }
 }

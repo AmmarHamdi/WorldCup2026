@@ -2,11 +2,17 @@ package com.worldcup.calendar2026.data.repository
 
 import com.worldcup.calendar2026.WorldCupConfig
 import com.worldcup.calendar2026.data.mapper.toGroupStanding
+import com.worldcup.calendar2026.data.mapper.toLineup
 import com.worldcup.calendar2026.data.mapper.toMatch
+import com.worldcup.calendar2026.data.mapper.toMatchEvent
+import com.worldcup.calendar2026.data.mapper.toMatchStatistics
 import com.worldcup.calendar2026.data.remote.ApiFootballService
 import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.domain.model.GroupStanding
+import com.worldcup.calendar2026.domain.model.Lineup
 import com.worldcup.calendar2026.domain.model.Match
+import com.worldcup.calendar2026.domain.model.MatchEvent
+import com.worldcup.calendar2026.domain.model.MatchStatistic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -55,5 +61,30 @@ class WorldCupRepository @Inject constructor(
             ?.standings
             ?.map { it.toGroupStanding() }
             ?: emptyList()
+    }
+
+    suspend fun matchDetail(id: Int): Match = withContext(Dispatchers.IO) {
+        val envelope = service.getFixtureById(id)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        envelope.response.firstOrNull()?.toMatch()
+            ?: throw IllegalStateException("Fixture not found")
+    }
+
+    suspend fun matchEvents(id: Int): List<MatchEvent> = withContext(Dispatchers.IO) {
+        val envelope = service.getFixtureEvents(id)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        envelope.response.map { it.toMatchEvent() }
+    }
+
+    suspend fun matchLineups(id: Int): List<Lineup> = withContext(Dispatchers.IO) {
+        val envelope = service.getFixtureLineups(id)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        envelope.response.map { it.toLineup() }
+    }
+
+    suspend fun matchStatistics(id: Int): List<MatchStatistic> = withContext(Dispatchers.IO) {
+        val envelope = service.getFixtureStatistics(id)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        envelope.response.toMatchStatistics()
     }
 }
