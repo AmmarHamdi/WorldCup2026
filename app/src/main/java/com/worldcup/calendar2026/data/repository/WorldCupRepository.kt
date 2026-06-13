@@ -131,6 +131,23 @@ class WorldCupRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    // ---- Knockout fixtures ----------------------------------------------------
+
+    /** Returns all knockout-stage matches grouped by round name, e.g. "Round of 32". */
+    suspend fun knockoutFixtures(): Map<String, List<Match>> = withContext(Dispatchers.IO) {
+        val knockoutRounds = listOf(
+            "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Final"
+        )
+        val envelope = service.getFixtures(league, season)
+        if (envelope.errors.isNotEmpty()) throw IllegalStateException(envelope.errors.toErrorMessage())
+        envelope.response
+            .map { it.toMatch() }
+            .filter { it.round in knockoutRounds }
+            .sortedBy { it.kickoff }
+            .groupBy { it.round }
+            .toSortedMap(compareBy { knockoutRounds.indexOf(it) })
+    }
+
     // ---- Non-cached suspend functions (detail endpoints) --------------------
 
     suspend fun matchDetail(id: Int): Match = withContext(Dispatchers.IO) {
