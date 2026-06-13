@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.worldcup.calendar2026.data.ApiKeyStore
 import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
+import com.worldcup.calendar2026.data.repository.CachedResult
 import com.worldcup.calendar2026.data.repository.WorldCupRepository
 import com.worldcup.calendar2026.domain.model.GroupStanding
 import com.worldcup.calendar2026.domain.model.Lineup
@@ -18,6 +19,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -31,6 +33,10 @@ data class MatchDetailData(
     val statistics: List<MatchStatistic>
 )
 
+/** Helper to map [CachedResult] to [UiState.Success] preserving the cache warning. */
+private fun <T> CachedResult<T>.toUiState(): UiState<T> =
+    UiState.Success(data, cacheWarning)
+
 /** Full match calendar, grouped by date in the UI. */
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
@@ -43,9 +49,9 @@ class CalendarViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
-        runCatching { repo.fixtures() }
-            .onSuccess { _state.value = UiState.Success(it) }
-            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load fixtures") }
+        repo.fixturesFlow()
+            .catch { _state.value = UiState.Error(it.message ?: "Could not load fixtures") }
+            .collect { _state.value = it.toUiState() }
     }
 }
 
@@ -62,12 +68,12 @@ class LiveViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
-        runCatching { repo.liveMatches() }
-            .onSuccess {
-                _state.value = UiState.Success(it)
-                notifications.notifyLiveMatches(it)
+        repo.liveMatchesFlow()
+            .catch { _state.value = UiState.Error(it.message ?: "Could not load live matches") }
+            .collect {
+                _state.value = it.toUiState()
+                notifications.notifyLiveMatches(it.data)
             }
-            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load live matches") }
     }
 }
 
@@ -86,12 +92,12 @@ class NextDayViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
-        runCatching { repo.fixturesOn(date) }
-            .onSuccess {
-                _state.value = UiState.Success(it)
-                notifications.notifyUpcomingMatches(it)
+        repo.fixturesOnFlow(date)
+            .catch { _state.value = UiState.Error(it.message ?: "Could not load fixtures") }
+            .collect {
+                _state.value = it.toUiState()
+                notifications.notifyUpcomingMatches(it.data)
             }
-            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load fixtures") }
     }
 }
 
@@ -107,9 +113,9 @@ class StandingsViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         _state.value = UiState.Loading
-        runCatching { repo.standings() }
-            .onSuccess { _state.value = UiState.Success(it) }
-            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load standings") }
+        repo.standingsFlow()
+            .catch { _state.value = UiState.Error(it.message ?: "Could not load standings") }
+            .collect { _state.value = it.toUiState() }
     }
 }
 

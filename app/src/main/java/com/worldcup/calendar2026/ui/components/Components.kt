@@ -65,8 +65,28 @@ fun <T> StateContainer(
                 Text(emptyMessage, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
-            content(state.data)
+            Column {
+                state.cacheWarning?.let { warning -> CacheWarningBanner(warning) }
+                content(state.data)
+            }
         }
+    }
+}
+
+/** Subtle top banner shown when data is served from cache due to a network error. */
+@Composable
+fun CacheWarningBanner(message: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+        )
     }
 }
 
