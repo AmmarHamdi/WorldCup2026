@@ -83,7 +83,7 @@ fun MainScreen() {
                                 }
                             },
                             icon = { Icon(tab.icon, contentDescription = tab.label) },
-                            label = { Text(tab.label) }
+                            label = { Text(tab.label, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) }
                         )
                     }
                 }
