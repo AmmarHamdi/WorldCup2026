@@ -72,7 +72,7 @@ class LiveViewModel @Inject constructor(
     private val _lastUpdated = MutableStateFlow<LocalTime?>(null)
     val lastUpdated = _lastUpdated.asStateFlow()
 
-    private val _isPolling = MutableStateFlow(true)
+    private val _isPolling = MutableStateFlow(false)
 
     init {
         launchPollingLoop()
@@ -80,12 +80,13 @@ class LiveViewModel @Inject constructor(
 
     private fun launchPollingLoop() {
         viewModelScope.launch {
+            // Initial load regardless of polling state
+            pollOnce()
             while (true) {
                 if (_isPolling.value) {
-                    pollOnce()
                     delay(30_000)
+                    pollOnce()
                 } else {
-                    // Wait until polling is re-enabled
                     delay(500)
                 }
             }
@@ -96,7 +97,11 @@ class LiveViewModel @Inject constructor(
         _isRefreshing.value = true
         repo.liveMatchesFlow()
             .catch {
-                if (_state.value !is UiState.Success) {
+                if (_state.value is UiState.Success) {
+                    // Keep stale data visible but surface the error as a cache warning
+                    val stale = (_state.value as UiState.Success<List<Match>>).data
+                    _state.value = UiState.Success(stale, cacheWarning = "Refresh failed — showing stale data")
+                } else {
                     _state.value = UiState.Error(it.message ?: "Could not load live matches")
                 }
                 _isRefreshing.value = false
