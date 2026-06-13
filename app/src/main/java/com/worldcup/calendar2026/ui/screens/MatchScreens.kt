@@ -41,7 +41,7 @@ fun LiveScreen(viewModel: LiveViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     StateContainer(
         state = state,
-        onRetry = { /* polling resumes automatically */ },
+        onRetry = viewModel::refresh,
         emptyMessage = "No matches are live right now"
     ) { matches ->
         MatchList(matches)

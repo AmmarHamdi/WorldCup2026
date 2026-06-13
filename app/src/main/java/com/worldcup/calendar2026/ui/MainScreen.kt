@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,13 +27,15 @@ import androidx.navigation.compose.rememberNavController
 import com.worldcup.calendar2026.ui.screens.CalendarScreen
 import com.worldcup.calendar2026.ui.screens.LiveScreen
 import com.worldcup.calendar2026.ui.screens.NextDayScreen
+import com.worldcup.calendar2026.ui.screens.SettingsScreen
 import com.worldcup.calendar2026.ui.screens.StandingsScreen
 
 enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     Calendar("calendar", "Calendar", Icons.Filled.CalendarMonth),
     Live("live", "Live", Icons.Filled.PlayCircle),
     Standings("standings", "Table", Icons.Filled.EmojiEvents),
-    NextDay("nextday", "Tomorrow", Icons.Filled.Today)
+    NextDay("nextday", "Tomorrow", Icons.Filled.Today),
+    Settings("settings", "Settings", Icons.Filled.Settings)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +79,7 @@ fun MainScreen() {
             composable(Tab.Live.route) { LiveScreen() }
             composable(Tab.Standings.route) { StandingsScreen() }
             composable(Tab.NextDay.route) { NextDayScreen() }
+            composable(Tab.Settings.route) { SettingsScreen() }
         }
     }
 }
