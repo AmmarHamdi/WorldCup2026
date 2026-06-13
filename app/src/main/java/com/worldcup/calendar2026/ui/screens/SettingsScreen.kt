@@ -27,7 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val savedKey by viewModel.apiKey.collectAsStateWithLifecycle()
-    var draftKey by rememberSaveable(savedKey) { mutableStateOf(savedKey) }
+    var draftKey by rememberSaveable { mutableStateOf(savedKey) }
     var saved by rememberSaveable { mutableStateOf(false) }
 
     Column(
@@ -54,8 +54,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
-                viewModel.updateApiKey(draftKey)
-                viewModel.saveApiKey()
+                viewModel.saveApiKey(draftKey)
                 saved = true
             },
             modifier = Modifier.align(Alignment.End),

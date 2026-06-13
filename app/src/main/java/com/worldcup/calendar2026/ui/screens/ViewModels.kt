@@ -97,11 +97,8 @@ class SettingsViewModel @Inject constructor(
     private val _apiKey = MutableStateFlow(apiKeyStore.getKey())
     val apiKey: StateFlow<String> = _apiKey.asStateFlow()
 
-    fun updateApiKey(key: String) {
-        _apiKey.value = key
-    }
-
-    fun saveApiKey() {
-        apiKeyStore.setKey(_apiKey.value)
+    fun saveApiKey(key: String) {
+        apiKeyStore.setKey(key)
+        _apiKey.value = apiKeyStore.getKey()
     }
 }
