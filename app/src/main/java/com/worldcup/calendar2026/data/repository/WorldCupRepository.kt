@@ -4,6 +4,7 @@ import com.worldcup.calendar2026.WorldCupConfig
 import com.worldcup.calendar2026.data.mapper.toGroupStanding
 import com.worldcup.calendar2026.data.mapper.toMatch
 import com.worldcup.calendar2026.data.remote.ApiFootballService
+import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.domain.model.GroupStanding
 import com.worldcup.calendar2026.domain.model.Match
 import kotlinx.coroutines.Dispatchers
@@ -19,26 +20,49 @@ class WorldCupRepository @Inject constructor(
     private val league = WorldCupConfig.LEAGUE_ID
     private val season = WorldCupConfig.SEASON
 
+    suspend fun checkStatus(): StatusResponseDto = withContext(Dispatchers.IO) {
+        val envelope = service.getStatus()
+        if (envelope.errors.isNotEmpty()) {
+            val msg = envelope.errors.values.joinToString("; ")
+            throw IllegalStateException(msg)
+        }
+        envelope.response ?: throw IllegalStateException("Empty status response")
+    }
+
     suspend fun fixtures(): List<Match> = withContext(Dispatchers.IO) {
-        service.getFixtures(league, season).response
-            .map { it.toMatch() }
-            .sortedBy { it.kickoff }
+        val envelope = service.getFixtures(league, season)
+        if (envelope.errors.isNotEmpty()) {
+            val msg = envelope.errors.values.joinToString("; ")
+            throw IllegalStateException(msg)
+        }
+        envelope.response.map { it.toMatch() }.sortedBy { it.kickoff }
     }
 
     suspend fun fixturesOn(date: LocalDate): List<Match> = withContext(Dispatchers.IO) {
-        service.getFixturesByDate(league, season, date.toString()).response
-            .map { it.toMatch() }
-            .sortedBy { it.kickoff }
+        val envelope = service.getFixturesByDate(league, season, date.toString())
+        if (envelope.errors.isNotEmpty()) {
+            val msg = envelope.errors.values.joinToString("; ")
+            throw IllegalStateException(msg)
+        }
+        envelope.response.map { it.toMatch() }.sortedBy { it.kickoff }
     }
 
     suspend fun liveMatches(): List<Match> = withContext(Dispatchers.IO) {
-        service.getLiveFixtures(league, season).response
-            .map { it.toMatch() }
-            .sortedBy { it.kickoff }
+        val envelope = service.getLiveFixtures(league, season)
+        if (envelope.errors.isNotEmpty()) {
+            val msg = envelope.errors.values.joinToString("; ")
+            throw IllegalStateException(msg)
+        }
+        envelope.response.map { it.toMatch() }.sortedBy { it.kickoff }
     }
 
     suspend fun standings(): List<GroupStanding> = withContext(Dispatchers.IO) {
-        service.getStandings(league, season).response
+        val envelope = service.getStandings(league, season)
+        if (envelope.errors.isNotEmpty()) {
+            val msg = envelope.errors.values.joinToString("; ")
+            throw IllegalStateException(msg)
+        }
+        envelope.response
             .firstOrNull()
             ?.league
             ?.standings

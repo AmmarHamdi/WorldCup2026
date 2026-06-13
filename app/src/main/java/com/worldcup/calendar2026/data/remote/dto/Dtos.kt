@@ -7,7 +7,45 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class ApiEnvelope<T>(
     @Json(name = "response") val response: List<T> = emptyList(),
-    @Json(name = "results") val results: Int = 0
+    @Json(name = "results") val results: Int = 0,
+    /** Non-empty when the API returns an error (e.g. invalid key, plan restriction). */
+    @Json(name = "errors") val errors: Map<String, String> = emptyMap()
+)
+
+// ---- Status -----------------------------------------------------------------
+
+/** Envelope for GET /status whose `response` is an object, not an array. */
+@JsonClass(generateAdapter = true)
+data class StatusEnvelope(
+    @Json(name = "response") val response: StatusResponseDto? = null,
+    @Json(name = "errors") val errors: Map<String, String> = emptyMap()
+)
+
+@JsonClass(generateAdapter = true)
+data class StatusResponseDto(
+    val account: AccountDto,
+    val subscription: SubscriptionDto,
+    val requests: RequestsDto
+)
+
+@JsonClass(generateAdapter = true)
+data class AccountDto(
+    val firstname: String?,
+    val lastname: String?,
+    val email: String?
+)
+
+@JsonClass(generateAdapter = true)
+data class SubscriptionDto(
+    val plan: String?,
+    val end: String?,
+    val active: Boolean
+)
+
+@JsonClass(generateAdapter = true)
+data class RequestsDto(
+    val current: Int,
+    @Json(name = "limit_day") val limitDay: Int
 )
 
 // ---- Fixtures ---------------------------------------------------------------
