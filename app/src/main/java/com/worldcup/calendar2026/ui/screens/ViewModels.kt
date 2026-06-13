@@ -16,12 +16,14 @@ import com.worldcup.calendar2026.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 /** Data holder for the match detail screen. */
@@ -55,7 +57,7 @@ class CalendarViewModel @Inject constructor(
     }
 }
 
-/** Live matches — fetched on demand (no automatic polling). */
+/** Live matches — auto-polls every 30 seconds while the screen is visible. */
 @HiltViewModel
 class LiveViewModel @Inject constructor(
     private val repo: WorldCupRepository,
@@ -64,16 +66,63 @@ class LiveViewModel @Inject constructor(
     private val _state = MutableStateFlow<UiState<List<Match>>>(UiState.Loading)
     val state = _state.asStateFlow()
 
-    init { refresh() }
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
 
-    fun refresh() = viewModelScope.launch {
-        _state.value = UiState.Loading
+    private val _lastUpdated = MutableStateFlow<LocalTime?>(null)
+    val lastUpdated = _lastUpdated.asStateFlow()
+
+    private val _isPolling = MutableStateFlow(false)
+
+    init {
+        launchPollingLoop()
+    }
+
+    private fun launchPollingLoop() {
+        viewModelScope.launch {
+            // Initial load regardless of polling state
+            pollOnce()
+            while (true) {
+                if (_isPolling.value) {
+                    delay(30_000)
+                    pollOnce()
+                } else {
+                    delay(500)
+                }
+            }
+        }
+    }
+
+    private suspend fun pollOnce() {
+        _isRefreshing.value = true
         repo.liveMatchesFlow()
-            .catch { _state.value = UiState.Error(it.message ?: "Could not load live matches") }
+            .catch {
+                if (_state.value is UiState.Success) {
+                    // Keep stale data visible but surface the error as a cache warning
+                    val stale = (_state.value as UiState.Success<List<Match>>).data
+                    _state.value = UiState.Success(stale, cacheWarning = "Refresh failed — showing stale data")
+                } else {
+                    _state.value = UiState.Error(it.message ?: "Could not load live matches")
+                }
+                _isRefreshing.value = false
+            }
             .collect {
                 _state.value = it.toUiState()
                 notifications.notifyLiveMatches(it.data)
+                _lastUpdated.value = LocalTime.now()
+                _isRefreshing.value = false
             }
+    }
+
+    /** Manual pull-to-refresh / retry fallback. */
+    fun refresh() = viewModelScope.launch { pollOnce() }
+
+    fun startPolling() { _isPolling.value = true }
+    fun stopPolling() { _isPolling.value = false }
+
+    override fun onCleared() {
+        _isPolling.value = false
+        super.onCleared()
     }
 }
 

@@ -1,25 +1,36 @@
 package com.worldcup.calendar2026.ui.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.worldcup.calendar2026.domain.model.Match
 import com.worldcup.calendar2026.ui.components.DateHeader
 import com.worldcup.calendar2026.ui.components.MatchCard
 import com.worldcup.calendar2026.ui.components.StateContainer
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val headerFmt: DateTimeFormatter =
     DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault())
+
+private val timeFmt: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm:ss", Locale.getDefault())
 
 /** Full tournament calendar, grouped by date with sticky headers. */
 @Composable
@@ -47,12 +58,34 @@ fun LiveScreen(
     viewModel: LiveViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val lastUpdated by viewModel.lastUpdated.collectAsStateWithLifecycle()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.startPolling() }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { viewModel.stopPolling() }
+
     StateContainer(
         state = state,
         onRetry = viewModel::refresh,
         emptyMessage = "No matches are live right now"
     ) { matches ->
-        MatchList(matches, onMatchClick = onMatchClick)
+        Column {
+            if (isRefreshing) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+            MatchList(matches, onMatchClick = onMatchClick)
+            lastUpdated?.let {
+                Text(
+                    text = "Last updated: ${it.format(timeFmt)}",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 
