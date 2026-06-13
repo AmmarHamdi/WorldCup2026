@@ -23,33 +23,44 @@ private val headerFmt: DateTimeFormatter =
 
 /** Full tournament calendar, grouped by date with sticky headers. */
 @Composable
-fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
+fun CalendarScreen(
+    onMatchClick: (Int) -> Unit = {},
+    viewModel: CalendarViewModel = hiltViewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     StateContainer(state = state, onRetry = viewModel::refresh, emptyMessage = "No fixtures published yet") { matches ->
         val grouped = matches.groupBy { it.localDate }.toSortedMap()
         LazyColumn(contentPadding = PaddingValues(bottom = 16.dp)) {
             grouped.forEach { (date, dayMatches) ->
                 item(key = "header-$date") { DateHeader(date.format(headerFmt)) }
-                items(dayMatches, key = { it.id }) { MatchCard(it) }
+                items(dayMatches, key = { it.id }) { match ->
+                    MatchCard(match, onClick = { onMatchClick(match.id) })
+                }
             }
         }
     }
 }
 
 @Composable
-fun LiveScreen(viewModel: LiveViewModel = hiltViewModel()) {
+fun LiveScreen(
+    onMatchClick: (Int) -> Unit = {},
+    viewModel: LiveViewModel = hiltViewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     StateContainer(
         state = state,
         onRetry = viewModel::refresh,
         emptyMessage = "No matches are live right now"
     ) { matches ->
-        MatchList(matches)
+        MatchList(matches, onMatchClick = onMatchClick)
     }
 }
 
 @Composable
-fun NextDayScreen(viewModel: NextDayViewModel = hiltViewModel()) {
+fun NextDayScreen(
+    onMatchClick: (Int) -> Unit = {},
+    viewModel: NextDayViewModel = hiltViewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     StateContainer(
         state = state,
@@ -58,14 +69,18 @@ fun NextDayScreen(viewModel: NextDayViewModel = hiltViewModel()) {
     ) { matches ->
         LazyColumn(contentPadding = PaddingValues(bottom = 16.dp)) {
             item { DateHeader(viewModel.date.format(headerFmt)) }
-            items(matches, key = { it.id }) { MatchCard(it) }
+            items(matches, key = { it.id }) { match ->
+                MatchCard(match, onClick = { onMatchClick(match.id) })
+            }
         }
     }
 }
 
 @Composable
-private fun MatchList(matches: List<Match>, modifier: Modifier = Modifier) {
+private fun MatchList(matches: List<Match>, modifier: Modifier = Modifier, onMatchClick: (Int) -> Unit = {}) {
     LazyColumn(modifier = modifier, contentPadding = PaddingValues(vertical = 8.dp)) {
-        items(matches, key = { it.id }) { MatchCard(it) }
+        items(matches, key = { it.id }) { match ->
+            MatchCard(match, onClick = { onMatchClick(match.id) })
+        }
     }
 }

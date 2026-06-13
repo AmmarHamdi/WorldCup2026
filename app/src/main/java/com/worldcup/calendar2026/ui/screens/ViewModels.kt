@@ -6,16 +6,30 @@ import com.worldcup.calendar2026.data.ApiKeyStore
 import com.worldcup.calendar2026.data.remote.dto.StatusResponseDto
 import com.worldcup.calendar2026.data.repository.WorldCupRepository
 import com.worldcup.calendar2026.domain.model.GroupStanding
+import com.worldcup.calendar2026.domain.model.Lineup
 import com.worldcup.calendar2026.domain.model.Match
+import com.worldcup.calendar2026.domain.model.MatchEvent
+import com.worldcup.calendar2026.domain.model.MatchStatistic
 import com.worldcup.calendar2026.notifications.MatchNotificationManager
 import com.worldcup.calendar2026.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+
+/** Data holder for the match detail screen. */
+data class MatchDetailData(
+    val match: Match,
+    val events: List<MatchEvent>,
+    val homeLineup: Lineup?,
+    val awayLineup: Lineup?,
+    val statistics: List<MatchStatistic>
+)
 
 /** Full match calendar, grouped by date in the UI. */
 @HiltViewModel
@@ -122,5 +136,44 @@ class SettingsViewModel @Inject constructor(
         runCatching { repo.checkStatus() }
             .onSuccess { _connectionState.value = UiState.Success(it) }
             .onFailure { _connectionState.value = UiState.Error(it.message ?: "Connection failed") }
+    }
+}
+
+/** Match detail — loads fixture, events, lineups, and statistics in parallel. */
+@HiltViewModel
+class MatchDetailViewModel @Inject constructor(
+    savedStateHandle: androidx.lifecycle.SavedStateHandle,
+    private val repo: WorldCupRepository
+) : ViewModel() {
+    private val matchId: Int = checkNotNull(savedStateHandle["matchId"])
+
+    private val _state = MutableStateFlow<UiState<MatchDetailData>>(UiState.Loading)
+    val state = _state.asStateFlow()
+
+    init { refresh() }
+
+    fun refresh() = viewModelScope.launch {
+        _state.value = UiState.Loading
+        runCatching {
+            coroutineScope {
+                val matchDeferred = async { repo.matchDetail(matchId) }
+                val eventsDeferred = async { repo.matchEvents(matchId) }
+                val lineupsDeferred = async { repo.matchLineups(matchId) }
+                val statsDeferred = async { repo.matchStatistics(matchId) }
+                val match = matchDeferred.await()
+                val events = eventsDeferred.await()
+                val lineups = lineupsDeferred.await()
+                val statistics = statsDeferred.await()
+                MatchDetailData(
+                    match = match,
+                    events = events,
+                    homeLineup = lineups.getOrNull(0),
+                    awayLineup = lineups.getOrNull(1),
+                    statistics = statistics
+                )
+            }
+        }
+            .onSuccess { _state.value = UiState.Success(it) }
+            .onFailure { _state.value = UiState.Error(it.message ?: "Could not load match details") }
     }
 }

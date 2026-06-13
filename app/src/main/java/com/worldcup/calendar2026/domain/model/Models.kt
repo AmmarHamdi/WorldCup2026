@@ -49,3 +49,39 @@ data class StandingRow(
     val points: Int,
     val form: String?
 )
+
+// ---- Match Detail -----------------------------------------------------------
+
+enum class EventType { GOAL, CARD, SUBSTITUTION, VAR, UNKNOWN }
+
+data class MatchEvent(
+    val minute: Int,
+    val extraMinute: Int?,
+    val teamId: Int,
+    val playerName: String,
+    val assistName: String?,
+    val type: EventType,
+    val detail: String?
+)
+
+data class LineupPlayer(
+    val id: Int,
+    val name: String,
+    val number: Int,
+    val position: String?
+)
+
+data class Lineup(
+    val teamId: Int,
+    val teamName: String,
+    val teamLogo: String?,
+    val coach: String?,
+    val startingXI: List<LineupPlayer>,
+    val substitutes: List<LineupPlayer>
+)
+
+data class MatchStatistic(
+    val type: String,
+    val home: String?,
+    val away: String?
+)

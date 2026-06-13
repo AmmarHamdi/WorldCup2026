@@ -117,13 +117,14 @@ private fun TeamRow(name: String, logoUrl: String?, goals: Int?, bold: Boolean) 
 }
 
 @Composable
-fun MatchCard(match: Match, modifier: Modifier = Modifier) {
+fun MatchCard(match: Match, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     val homeWon = match.isFinished && (match.homeGoals ?: 0) > (match.awayGoals ?: 0)
     val awayWon = match.isFinished && (match.awayGoals ?: 0) > (match.homeGoals ?: 0)
 
     Card(
         modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        onClick = { onClick?.invoke() }
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(
