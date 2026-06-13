@@ -2,6 +2,7 @@ package com.worldcup.calendar2026.di
 
 import com.squareup.moshi.Moshi
 import com.worldcup.calendar2026.BuildConfig
+import com.worldcup.calendar2026.data.ApiKeyStore
 import com.worldcup.calendar2026.data.remote.ApiFootballService
 import dagger.Module
 import dagger.Provides
@@ -18,11 +19,11 @@ import javax.inject.Singleton
 
 private const val BASE_URL = "https://v3.football.api-sports.io/"
 
-/** Adds the API-Football key header to every request. */
-class AuthInterceptor(private val apiKey: String) : Interceptor {
+/** Adds the API-Football key header to every request, reading it dynamically from [ApiKeyStore]. */
+class AuthInterceptor(private val apiKeyStore: ApiKeyStore) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
-            .addHeader("x-apisports-key", apiKey)
+            .addHeader("x-apisports-key", apiKeyStore.getKey())
             .build()
         return chain.proceed(request)
     }
@@ -38,8 +39,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(AuthInterceptor(BuildConfig.FOOTBALL_API_KEY))
+    fun provideOkHttpClient(apiKeyStore: ApiKeyStore): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(AuthInterceptor(apiKeyStore))
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC
             else HttpLoggingInterceptor.Level.NONE
